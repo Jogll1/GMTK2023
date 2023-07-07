@@ -12,8 +12,12 @@ public class CarController : MonoBehaviour
     private float currentSpeed;
     private float screenHalfWidth;
 
+    private Rigidbody2D rb;
+
     private void Start()
     {
+        rb = GetComponent<Rigidbody2D>();
+
         float screenHeight = Camera.main.orthographicSize;
         float screenWidth = screenHeight * Camera.main.aspect;
         screenHalfWidth = screenWidth;
@@ -43,13 +47,16 @@ public class CarController : MonoBehaviour
         currentSpeed = Mathf.Clamp(currentSpeed, -maxSpeed, maxSpeed);
 
         //move the car forward/backward
-        transform.Translate(Vector2.up * currentSpeed * Time.deltaTime);
+        // transform.Translate(Vector2.up * currentSpeed * Time.deltaTime);
+        Vector2 movement = transform.up * currentSpeed;
+        rb.velocity = movement;
 
         //wrap the car horizontally
         WrapHorizontal();
 
         //rotate the car
         transform.Rotate(Vector3.forward * -rotationSpeed * rotationAxis * Time.deltaTime);
+        // rb.angularVelocity = -rotationSpeed * rotationAxis;
     }
 
     private void WrapHorizontal()
