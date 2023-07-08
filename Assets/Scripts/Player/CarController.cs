@@ -46,7 +46,7 @@ public class CarController : MonoBehaviour
 
         currentSpeed = Mathf.Clamp(currentSpeed, -maxSpeed, maxSpeed);
 
-        //move the car forward/backward
+        //move the car
         // transform.Translate(Vector2.up * currentSpeed * Time.deltaTime);
         Vector2 movement = transform.up * currentSpeed;
         rb.velocity = movement;
@@ -61,6 +61,7 @@ public class CarController : MonoBehaviour
 
     private void WrapHorizontal()
     {
+        //teleport the car if it goes of the side of the screen
         Vector3 currentPosition = transform.position;
         if (currentPosition.x > screenHalfWidth)
         {
