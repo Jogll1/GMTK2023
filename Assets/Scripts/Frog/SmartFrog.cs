@@ -26,19 +26,33 @@ public class SmartFrog : MonoBehaviour
     private float halfScreenWidth;
     private float halfScreenHeight;
 
+    //design
+    public GameObject design;
+
+    //death effects
+    public GameObject deathText;
+    public GameObject squish;
+
+    private ScoreManager scoreManager;
+
+    bool died = false;
+
     // Start is called before the first frame update
     void Start()
     {
         pathfinding = GameObject.FindWithTag("Pathfinding").GetComponent<Pathfinding>();
+        scoreManager = GameObject.FindWithTag("ScoreManager").GetComponent<ScoreManager>();
         rb = GetComponent<Rigidbody2D>();
 
         moveTarget.parent = null;
+
+        died = false;
 
         //set canMove
         canMove = true;
 
         //set timer
-        currentMoveTimer = moveTimer;
+        currentMoveTimer = Random.Range(moveTimer - 0.1f, moveTimer + 0.15f);
 
         //screen sizes
         halfScreenHeight = Camera.main.orthographicSize;
@@ -60,7 +74,7 @@ public class SmartFrog : MonoBehaviour
         if (Vector3.Distance(transform.position, moveTarget.position) <= .05f)
         {
             //reset timer once at target
-            currentMoveTimer = moveTimer;
+            currentMoveTimer = Random.Range(moveTimer - 0.1f, moveTimer + 0.15f);
 
             //get next move from path list  
             //convert pos to nodes
@@ -72,8 +86,6 @@ public class SmartFrog : MonoBehaviour
             {
                 int h = path[0].gridX - myNode.gridX;
                 int v = path[0].gridY - myNode.gridY;
-
-                Debug.Log(h + " " + v);
 
                 moveTarget.position = UpdateTargetPos(moveTarget.position, h, v);
             }
@@ -128,7 +140,28 @@ public class SmartFrog : MonoBehaviour
             }
         }
 
+        UpdateDesign(h, v);
         return updatedTargetPos;
+    }
+
+    private void UpdateDesign(int h, int v)
+    {
+        if (h == 1)
+        {
+            design.transform.eulerAngles = new Vector3(0f, 0f, -90f);
+        }
+        else if (h == -1)
+        {
+            design.transform.eulerAngles = new Vector3(0f, 0f, 90f);
+        }
+        else if (v == -1)
+        {
+            design.transform.eulerAngles = new Vector3(0f, 0f, 180f);
+        }
+        else
+        {
+            design.transform.eulerAngles = new Vector3(0f, 0f, 0f);
+        }
     }
 
     public void LogPath()
@@ -145,6 +178,24 @@ public class SmartFrog : MonoBehaviour
         if (other.tag == "Car")
         {
             //die
+            //set score
+            if (!died)
+            {
+                scoreManager.currentTime = scoreManager.comboTimer;
+                scoreManager.comboCounter++;
+                int scoreToAdd = scoreManager.comboCounter * 100;
+                Debug.Log(scoreToAdd);
+
+                GameObject deathTextGO = Instantiate(deathText, gameObject.transform.position, Quaternion.identity);
+                deathTextGO.GetComponentInChildren<TextMesh>().text = scoreToAdd.ToString();
+                deathTextGO.transform.localScale = new Vector3(scoreManager.comboCounter * 0.4f + 0.6f, scoreManager.comboCounter * 0.4f + 0.6f, 1f);
+                scoreManager.score += scoreToAdd;
+                Instantiate(squish, gameObject.transform.position, Quaternion.identity);
+
+                died = true;
+            }
+
+            Destroy(moveTarget.gameObject);
             Destroy(gameObject);
         }
         else if (other.tag == "Goal")

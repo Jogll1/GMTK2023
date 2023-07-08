@@ -12,6 +12,8 @@ public class CarController : MonoBehaviour
     private float currentSpeed;
     private float screenHalfWidth;
 
+    public GameObject exhaust;
+
     private Rigidbody2D rb;
 
     private void Start()
@@ -27,6 +29,11 @@ public class CarController : MonoBehaviour
     {
         float moveAxis = Input.GetAxis("Vertical");
         float rotationAxis = Input.GetAxis("Horizontal");
+
+        //modify particle system based on speed
+        ParticleSystem particles = exhaust.GetComponent<ParticleSystem>();
+        var psEmission = particles.emission;
+        psEmission.rateOverTime = currentSpeed * 2.5f;
 
         //adjust the current speed based on acceleration and friction
         if (moveAxis != 0f)
