@@ -6,13 +6,15 @@ using System.Diagnostics;
 //Credit Sebastian Lague
 public class Pathfinding : MonoBehaviour
 {
-    public Transform seeker, target;
+    public Transform seeker;
+    public Transform target;
 
     Grid grid;
 
     private void Awake()
     {
         grid = GetComponent<Grid>();
+        // seeker = transform;
     }
 
     private void Update()
