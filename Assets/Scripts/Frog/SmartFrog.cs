@@ -68,12 +68,15 @@ public class SmartFrog : MonoBehaviour
             path = pathfinding.FindPath(transform.position, goal.position);
             //get own node pos
             Node myNode = pathfinding.grid.NodeFromWorldPos(transform.position);
-            int h = path[0].gridX - myNode.gridX;
-            int v = path[0].gridY - myNode.gridY;
+            if (path.Count > 0) //when frog has nowhere to go path is null
+            {
+                int h = path[0].gridX - myNode.gridX;
+                int v = path[0].gridY - myNode.gridY;
 
-            Debug.Log(h + " " + v);
+                Debug.Log(h + " " + v);
 
-            moveTarget.position = UpdateTargetPos(moveTarget.position, h, v);
+                moveTarget.position = UpdateTargetPos(moveTarget.position, h, v);
+            }
         }
     }
 
@@ -108,6 +111,21 @@ public class SmartFrog : MonoBehaviour
         foreach (Node node in path)
         {
             Debug.Log(node.gridX + " " + node.gridY);
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.tag == "Car" && canMove)
+        {
+            //die
+            Destroy(gameObject);
+        }
+        else if (other.tag == "Goal")
+        {
+            //at goal
+            transform.position = goal.transform.position;
+            canMove = false;
         }
     }
 }
