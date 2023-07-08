@@ -17,7 +17,7 @@ public class SmartFrog : MonoBehaviour
 
     //timer
     public float moveTimer = 0.5f;
-    public float currentMoveTimer;
+    private float currentMoveTimer;
 
     //rigidbody
     private Rigidbody2D rb;
@@ -77,6 +77,32 @@ public class SmartFrog : MonoBehaviour
 
                 moveTarget.position = UpdateTargetPos(moveTarget.position, h, v);
             }
+            else
+            {
+                //move towards goal
+                int h = 0;
+                int v = 0;
+                int ran = Random.Range(0, 2); //bit of random
+                float distX = goal.transform.position.x - transform.position.x;
+                float distY = goal.transform.position.y - transform.position.y;
+                if (ran == 0)
+                {
+                    if (Mathf.Abs(distX) > 0.05f)
+                    {
+                        h = (int)Mathf.Sign(distX);
+                    }
+                }
+                else
+                {
+                    if (Mathf.Abs(distY) > 0.05f)
+                    {
+                        v = (int)Mathf.Sign(distY);
+                    }
+                }
+
+                //move target
+                moveTarget.position = UpdateTargetPos(moveTarget.position, h, v);
+            }
         }
     }
 
@@ -116,7 +142,7 @@ public class SmartFrog : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.tag == "Car" && canMove)
+        if (other.tag == "Car")
         {
             //die
             Destroy(gameObject);
@@ -125,7 +151,6 @@ public class SmartFrog : MonoBehaviour
         {
             //at goal
             transform.position = goal.transform.position;
-            canMove = false;
         }
     }
 }
