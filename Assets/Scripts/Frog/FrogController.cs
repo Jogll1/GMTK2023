@@ -7,7 +7,7 @@ public class FrogController : MonoBehaviour
     public float moveSpeed = 5f;
     public Transform targetPos;
 
-    private bool canMove = true;
+    public bool canMove = true;
 
     //detect when close to the car
     public float detectionRadius = 3f;
@@ -71,7 +71,6 @@ public class FrogController : MonoBehaviour
             //if far from car, move towards goal, else move away from it
             if (distFromCar > detectionRadius + 1.5 || Vector3.Distance(transform.position, goal.transform.position) <= 3f)
             {
-                Debug.Log("moving towards goal");
                 //moving towards goal
                 //distance between frog and goal
                 float distX = goal.transform.position.x - transform.position.x;
@@ -99,7 +98,6 @@ public class FrogController : MonoBehaviour
             }
             else if (distFromCar > detectionRadius)
             {
-                Debug.Log("in range");
                 //moving away from car
                 //distance between frog and car
                 float distX = player.transform.position.x - transform.position.x;
@@ -127,7 +125,6 @@ public class FrogController : MonoBehaviour
             }
             else
             {
-                Debug.Log("moving away");
                 //moving away
                 //moving around car radius
                 //distance between frog and car
@@ -204,7 +201,7 @@ public class FrogController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.tag == "Car")
+        if (other.tag == "Car" && canMove)
         {
             //die
             Destroy(gameObject);
