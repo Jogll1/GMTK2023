@@ -32,10 +32,14 @@ public class SmartFrog : MonoBehaviour
     //death effects
     public GameObject deathText;
     public GameObject squish;
+    public GameObject scoreSound;
 
     private ScoreManager scoreManager;
 
     bool died = false;
+
+    public AudioClip jumpClip;
+    public bool playedSound;
 
     // Start is called before the first frame update
     void Start()
@@ -67,12 +71,18 @@ public class SmartFrog : MonoBehaviour
 
         if (currentMoveTimer <= 0 && canMove)
         {
+            if (!playedSound)
+            {
+                GetComponent<AudioSource>().PlayOneShot(jumpClip);
+                playedSound = true;
+            }
             transform.position = Vector3.MoveTowards(transform.position, moveTarget.position, moveSpeed * Time.deltaTime);
         }
 
         //if at target
         if (Vector3.Distance(transform.position, moveTarget.position) <= .05f)
         {
+            playedSound = false;
             //reset timer once at target
             currentMoveTimer = Random.Range(moveTimer - 0.1f, moveTimer + 0.15f);
 
@@ -191,6 +201,7 @@ public class SmartFrog : MonoBehaviour
                 deathTextGO.transform.localScale = new Vector3(scoreManager.comboCounter * 0.4f + 0.6f, scoreManager.comboCounter * 0.4f + 0.6f, 1f);
                 scoreManager.score += scoreToAdd;
                 Instantiate(squish, gameObject.transform.position, Quaternion.identity);
+                Instantiate(scoreSound, gameObject.transform.position, Quaternion.identity);
 
                 died = true;
             }
