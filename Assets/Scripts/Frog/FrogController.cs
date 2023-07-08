@@ -7,6 +7,11 @@ public class FrogController : MonoBehaviour
     public float moveSpeed = 5f;
     public Transform targetPos;
 
+    private bool canMove = true;
+
+    //detect when close to the car
+    public float detectionRadius = 3f;
+
     //timer
     public float moveTimer = 0.5f;
     private float currentMoveTimer;
@@ -29,6 +34,9 @@ public class FrogController : MonoBehaviour
 
         targetPos.parent = null;
 
+        //set canMove
+        canMove = true;
+
         //set timer
         currentMoveTimer = moveTimer;
 
@@ -43,7 +51,7 @@ public class FrogController : MonoBehaviour
         //change timer
         currentMoveTimer -= Time.deltaTime;
 
-        if (currentMoveTimer <= 0)
+        if (currentMoveTimer <= 0 && canMove)
         {
             transform.position = Vector3.MoveTowards(transform.position, targetPos.position, moveSpeed * Time.deltaTime);
         }
@@ -54,36 +62,118 @@ public class FrogController : MonoBehaviour
             //reset timer once at target
             currentMoveTimer = moveTimer;
 
-            // int ran = Random.Range(0, 2);
-            // int h = (ran == 0) ? Random.Range(-1, 2) : 0;
-            // int v = (ran == 1) ? Random.Range(-1, 2) : 0;
+            //distance between frog and car
+            float distFromCar = Vector3.Distance(transform.position, player.transform.position);
 
-            //moving towards goal
             int h = 0;
             int v = 0;
-            //distance between frog and goal
-            float distX = goal.transform.position.x - transform.position.x;
-            float distY = goal.transform.position.y - transform.position.y;
-            Debug.Log(distX + " " + distY);
 
-            int ran = Random.Range(0, 2); //bit of random
-
-            if (ran == 0)
+            //if far from car, move towards goal, else move away from it
+            if (distFromCar > detectionRadius + 1.5 || Vector3.Distance(transform.position, goal.transform.position) <= 3f)
             {
-                if (Mathf.Abs(distX) > 0.05f)
+                Debug.Log("moving towards goal");
+                //moving towards goal
+                //distance between frog and goal
+                float distX = goal.transform.position.x - transform.position.x;
+                float distY = goal.transform.position.y - transform.position.y;
+
+                int ran = Random.Range(0, 2); //bit of random
+
+                if (ran == 0)
                 {
-                    h = (int)Mathf.Sign(distX);
+                    if (Mathf.Abs(distX) > 0.05f)
+                    {
+                        h = (int)Mathf.Sign(distX);
+                    }
                 }
+                else
+                {
+                    if (Mathf.Abs(distY) > 0.05f)
+                    {
+                        v = (int)Mathf.Sign(distY);
+                    }
+                }
+
+                //move target
+                targetPos.position = UpdateTargetPos(targetPos.position, h, v);
+            }
+            else if (distFromCar > detectionRadius)
+            {
+                Debug.Log("in range");
+                //moving away from car
+                //distance between frog and car
+                float distX = player.transform.position.x - transform.position.x;
+                float distY = player.transform.position.y - transform.position.y;
+
+                int ran = Random.Range(0, 2); //bit of random
+
+                if (ran == 0)
+                {
+                    if (Mathf.Abs(distX) > 0.05f)
+                    {
+                        h = -(int)Mathf.Sign(distX);
+                    }
+                }
+                else
+                {
+                    if (Mathf.Abs(distY) > 0.05f)
+                    {
+                        v = -(int)Mathf.Sign(distY);
+                    }
+                }
+
+                //move target
+                targetPos.position = UpdateTargetPos(targetPos.position, h, v);
             }
             else
             {
-                if (Mathf.Abs(distY) > 0.05f)
-                {
-                    v = (int)Mathf.Sign(distY);
-                }
-            }
+                Debug.Log("moving away");
+                //moving away
+                //moving around car radius
+                //distance between frog and car
+                float distX = player.transform.position.x - transform.position.x;
+                float distY = player.transform.position.y - transform.position.y;
 
-            targetPos.position = UpdateTargetPos(targetPos.position, h, v);
+                int ran = Random.Range(0, 2); //bit of random
+
+                if (ran == 0)
+                {
+                    if (Mathf.Abs(distY) > 0.05f)
+                    {
+                        v = -(int)Mathf.Sign(distY);
+                    }
+
+                    if (Vector3.Distance(transform.position + new Vector3(1f, 0f, 0f), player.transform.position) > detectionRadius)
+                    {
+                        v = 1;
+                    }
+                    else if (Vector3.Distance(transform.position + new Vector3(-1f, 0f, 0f), player.transform.position) > detectionRadius)
+                    {
+                        v = -1;
+                    }
+                }
+                else
+                {
+                    if (Mathf.Abs(distX) > 0.05f)
+                    {
+                        h = -(int)Mathf.Sign(distX);
+                    }
+
+                    if (Vector3.Distance(transform.position + new Vector3(0f, 1f, 0f), player.transform.position) > detectionRadius)
+                    {
+                        h = 1;
+                    }
+                    else if (Vector3.Distance(transform.position + new Vector3(0f, -1f, 0f), player.transform.position) > detectionRadius)
+                    {
+                        h = -1;
+                    }
+                }
+
+                if (h == 0) v = 1;
+
+                //move target
+                targetPos.position = UpdateTargetPos(targetPos.position, h, v);
+            }
         }
     }
 
@@ -118,6 +208,12 @@ public class FrogController : MonoBehaviour
         {
             //die
             Destroy(gameObject);
+        }
+        else if (other.tag == "Goal")
+        {
+            //at goal
+            transform.position = goal.transform.position;
+            canMove = false;
         }
     }
 }
