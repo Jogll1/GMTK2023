@@ -9,7 +9,7 @@ public class Pathfinding : MonoBehaviour
     public Transform seeker;
     public Transform target;
 
-    Grid grid;
+    public Grid grid;
 
     private void Awake()
     {
@@ -19,10 +19,10 @@ public class Pathfinding : MonoBehaviour
 
     private void Update()
     {
-        FindPath(seeker.position, target.position);
+        // grid.path = FindPath(seeker.position, target.position);
     }
 
-    void FindPath(Vector3 startPos, Vector3 targetPos)
+    public List<Node> FindPath(Vector3 startPos, Vector3 targetPos)
     {
         Node startNode = grid.NodeFromWorldPos(startPos);
         Node targetNode = grid.NodeFromWorldPos(targetPos);
@@ -41,8 +41,8 @@ public class Pathfinding : MonoBehaviour
 
             if (node == targetNode)
             {
-                RetracePath(startNode, targetNode);
-                return;
+                List<Node> path = RetracePath(startNode, targetNode);
+                return path;
             }
 
             foreach (Node neighbour in grid.GetNeighbours(node))
@@ -64,9 +64,12 @@ public class Pathfinding : MonoBehaviour
                 }
             }
         }
+
+        //else return empty list
+        return new List<Node>();
     }
 
-    void RetracePath(Node startNode, Node endNode)
+    List<Node> RetracePath(Node startNode, Node endNode)
     {
         List<Node> path = new List<Node>();
         Node currentNode = endNode;
@@ -79,7 +82,7 @@ public class Pathfinding : MonoBehaviour
 
         path.Reverse();
 
-        grid.path = path;
+        return path;
     }
 
     int GetDistance(Node nodeA, Node nodeB)
