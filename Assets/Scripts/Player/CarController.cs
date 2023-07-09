@@ -16,9 +16,12 @@ public class CarController : MonoBehaviour
 
     private Rigidbody2D rb;
 
+    private ScoreManager scoreManager;
+
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        scoreManager = GameObject.FindWithTag("ScoreManager").GetComponent<ScoreManager>();
 
         float screenHeight = Camera.main.orthographicSize;
         float screenWidth = screenHeight * Camera.main.aspect;
@@ -38,7 +41,7 @@ public class CarController : MonoBehaviour
         //adjust the current speed based on acceleration and friction
         if (moveAxis != 0f)
         {
-            currentSpeed += moveAxis * acceleration * Time.deltaTime;
+            if (!scoreManager.gameEnd) currentSpeed += moveAxis * acceleration * Time.deltaTime;
         }
         else
         {
@@ -62,7 +65,7 @@ public class CarController : MonoBehaviour
         WrapHorizontal();
 
         //rotate the car
-        transform.Rotate(Vector3.forward * -rotationSpeed * rotationAxis * Time.deltaTime);
+        if (!scoreManager.gameEnd) transform.Rotate(Vector3.forward * -rotationSpeed * rotationAxis * Time.deltaTime);
         // rb.angularVelocity = -rotationSpeed * rotationAxis;
     }
 

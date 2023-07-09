@@ -8,6 +8,7 @@ public class SpawnFrogs : MonoBehaviour
     public Transform[] goals;
     public List<GameObject> frogs = new List<GameObject>();
     public GameObject frogPrefab;
+    public GameObject goldFrogPrefab;
 
     public Transform frogsParent;
 
@@ -17,9 +18,15 @@ public class SpawnFrogs : MonoBehaviour
     public float spawnDelayTimer = 0.5f;
     private float currentTimer;
 
+    //frog deaths
+    public int frogDeaths;
+
+    public bool canSpawn;
+
     // Start is called before the first frame update
     void Start()
     {
+        canSpawn = true;
         currentTimer = Random.Range(spawnDelayTimer - 0.1f, spawnDelayTimer + 0.2f);
     }
 
@@ -30,13 +37,28 @@ public class SpawnFrogs : MonoBehaviour
         {
             currentTimer -= Time.deltaTime;
 
-            if (currentTimer <= 0)
+            if (currentTimer <= 0 && canSpawn)
             {
-                GameObject frog = Instantiate(frogPrefab, spawnPoints[Random.Range(0, frogs.Count)].position, Quaternion.identity, frogsParent);
-                SmartFrog smartFrog = frog.GetComponent<SmartFrog>();
-                smartFrog.goal = goals[Random.Range(0, goals.Length)].transform;
+                //check random
+                int ran = Random.Range(1, 8);
 
-                frogs.Add(frog);
+                if (ran == 1)
+                {
+                    //10% chance to spawn gold frog
+                    GameObject frog = Instantiate(goldFrogPrefab, spawnPoints[Random.Range(0, frogs.Count)].position, Quaternion.identity, frogsParent);
+                    SmartFrog smartFrog = frog.GetComponent<SmartFrog>();
+                    smartFrog.goal = goals[Random.Range(0, goals.Length)].transform;
+
+                    frogs.Add(frog);
+                }
+                else
+                {
+                    GameObject frog = Instantiate(frogPrefab, spawnPoints[Random.Range(0, frogs.Count)].position, Quaternion.identity, frogsParent);
+                    SmartFrog smartFrog = frog.GetComponent<SmartFrog>();
+                    smartFrog.goal = goals[Random.Range(0, goals.Length)].transform;
+
+                    frogs.Add(frog);
+                }
 
                 currentTimer = Random.Range(spawnDelayTimer - 0.1f, spawnDelayTimer + 0.2f);
             }

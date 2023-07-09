@@ -7,6 +7,7 @@ public class SmartFrog : MonoBehaviour
     private Pathfinding pathfinding;
 
     public float moveSpeed = 5f;
+    private float newMoveSpeed;
     public bool canMove = true;
 
     public List<Node> path = new List<Node>();
@@ -17,6 +18,7 @@ public class SmartFrog : MonoBehaviour
 
     //timer
     public float moveTimer = 0.5f;
+    private float newMoveTimer;
     private float currentMoveTimer;
 
     //rigidbody
@@ -35,9 +37,13 @@ public class SmartFrog : MonoBehaviour
     public GameObject scoreSound;
 
     private ScoreManager scoreManager;
+    private SpawnFrogs spawnManager;
 
     bool died = false;
 
+    public bool isGold;
+
+    //sound
     public AudioClip jumpClip;
     public bool playedSound;
 
@@ -46,6 +52,7 @@ public class SmartFrog : MonoBehaviour
     {
         pathfinding = GameObject.FindWithTag("Pathfinding").GetComponent<Pathfinding>();
         scoreManager = GameObject.FindWithTag("ScoreManager").GetComponent<ScoreManager>();
+        spawnManager = GameObject.FindWithTag("SpawnManager").GetComponent<SpawnFrogs>();
         rb = GetComponent<Rigidbody2D>();
 
         moveTarget.parent = null;
@@ -55,8 +62,11 @@ public class SmartFrog : MonoBehaviour
         //set canMove
         canMove = true;
 
+        newMoveSpeed = moveSpeed;
+
         //set timer
-        currentMoveTimer = Random.Range(moveTimer - 0.1f, moveTimer + 0.15f);
+        newMoveTimer = moveTimer;
+        currentMoveTimer = Random.Range(newMoveTimer - 0.1f, newMoveTimer + 0.15f);
 
         //screen sizes
         halfScreenHeight = Camera.main.orthographicSize;
@@ -69,14 +79,20 @@ public class SmartFrog : MonoBehaviour
         //change timer
         currentMoveTimer -= Time.deltaTime;
 
+        //change timer and moveSpeed based on frog deaths
+        newMoveTimer = moveTimer - spawnManager.frogDeaths * 0.01f;
+        newMoveTimer = Mathf.Clamp(newMoveTimer, 0, moveTimer);
+        // newMoveSpeed = moveSpeed + spawnManager.frogDeaths * 0.01f;
+        // newMoveSpeed = Mathf.Clamp(newMoveSpeed, moveSpeed, 10);
+
         if (currentMoveTimer <= 0 && canMove)
         {
-            if (!playedSound)
+            if (!playedSound && GetComponent<AudioSource>().enabled)
             {
                 GetComponent<AudioSource>().PlayOneShot(jumpClip);
                 playedSound = true;
             }
-            transform.position = Vector3.MoveTowards(transform.position, moveTarget.position, moveSpeed * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, moveTarget.position, newMoveSpeed * Time.deltaTime);
         }
 
         //if at target
@@ -84,7 +100,7 @@ public class SmartFrog : MonoBehaviour
         {
             playedSound = false;
             //reset timer once at target
-            currentMoveTimer = Random.Range(moveTimer - 0.1f, moveTimer + 0.15f);
+            currentMoveTimer = Random.Range(newMoveTimer - 0.1f, newMoveTimer + 0.15f);
 
             //get next move from path list  
             //convert pos to nodes
@@ -193,14 +209,18 @@ public class SmartFrog : MonoBehaviour
             {
                 scoreManager.currentTime = scoreManager.comboTimer;
                 scoreManager.comboCounter++;
-                int scoreToAdd = scoreManager.comboCounter * 100;
-                Debug.Log(scoreToAdd);
+                int scoreToAdd = (isGold) ? scoreManager.comboCounter * 300 : scoreManager.comboCounter * 100;
 
+                //increment frog deaths
+                spawnManager.frogDeaths++;
+
+                //spawn death effect
                 GameObject deathTextGO = Instantiate(deathText, gameObject.transform.position, Quaternion.identity);
                 deathTextGO.GetComponentInChildren<TextMesh>().text = scoreToAdd.ToString();
-                deathTextGO.transform.localScale = new Vector3(scoreManager.comboCounter * 0.4f + 0.6f, scoreManager.comboCounter * 0.4f + 0.6f, 1f);
+                deathTextGO.transform.localScale = new Vector3(scoreManager.comboCounter * 0.3f + 0.7f, scoreManager.comboCounter * 0.3f + 0.7f, 1f);
                 scoreManager.score += scoreToAdd;
-                Instantiate(squish, gameObject.transform.position, Quaternion.identity);
+                Quaternion randomRotation = Quaternion.Euler(0f, 0f, Random.Range(0f, 360f));
+                Instantiate(squish, gameObject.transform.position, randomRotation);
                 Instantiate(scoreSound, gameObject.transform.position, Quaternion.identity);
 
                 died = true;
@@ -211,8 +231,14 @@ public class SmartFrog : MonoBehaviour
         }
         else if (other.tag == "Goal")
         {
-            //at goal
-            transform.position = goal.transform.position;
+            //remove this from list
+            spawnManager.frogs.Remove(gameObject);
+
+            //decrement player health
+            scoreManager.health--;
+
+            //turn off sound
+            GetComponent<AudioSource>().enabled = false;
         }
     }
 }
