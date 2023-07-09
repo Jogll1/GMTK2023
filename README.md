@@ -4,8 +4,8 @@ A repository of some of the assets used for my entry to the Game Maker's Tool Ki
 You can find the full game on my itch.io:
 
 Credits for assets:
-Sebastian Lague
-JDWasabi
-ShatteredReality
-jsfxr
+Sebastian Lague,
+JDWasabi,
+ShatteredReality,
+jsfxr,
 Zane Little
