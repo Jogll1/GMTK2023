@@ -11,6 +11,8 @@ public class ButtonSounds : MonoBehaviour, IPointerEnterHandler, IPointerClickHa
     private Button button;
     private AudioSource audioSource;
 
+    public bool playSounds;
+
     private void Start()
     {
         button = GetComponent<Button>();
@@ -32,7 +34,7 @@ public class ButtonSounds : MonoBehaviour, IPointerEnterHandler, IPointerClickHa
     public void OnPointerEnter(PointerEventData eventData)
     {
         //play the hover sound when the mouse pointer enters the button
-        if (hoverSound != null)
+        if (hoverSound != null && playSounds)
         {
             audioSource.PlayOneShot(hoverSound);
         }
@@ -41,7 +43,7 @@ public class ButtonSounds : MonoBehaviour, IPointerEnterHandler, IPointerClickHa
     public void OnPointerClick(PointerEventData eventData)
     {
         //play the click sound when the button is clicked
-        if (clickSound != null)
+        if (clickSound != null && playSounds)
         {
             audioSource.PlayOneShot(clickSound);
         }
@@ -50,7 +52,7 @@ public class ButtonSounds : MonoBehaviour, IPointerEnterHandler, IPointerClickHa
     private void PlayClickSound()
     {
         // Play the click sound when the button is clicked
-        if (clickSound != null)
+        if (clickSound != null && playSounds)
         {
             audioSource.PlayOneShot(clickSound);
         }

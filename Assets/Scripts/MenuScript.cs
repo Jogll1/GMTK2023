@@ -9,6 +9,12 @@ public class MenuScript : MonoBehaviour
     public int highScore;
     public GameObject highScoreText;
 
+    private void Start()
+    {
+        //load high score from playerprefs
+        highScore = PlayerPrefs.GetInt("HighScore", 0);
+    }
+
     // Start is called before the first frame update
     void Update()
     {
@@ -18,7 +24,6 @@ public class MenuScript : MonoBehaviour
         highScoreText.GetComponent<TextMeshProUGUI>().text = "High Score: " + highScore.ToString("00000000");
     }
 
-    [MenuItem("Custom/Clear PlayerPrefs")]
     public static void ClearPlayerPrefs()
     {
         //clear player prefs

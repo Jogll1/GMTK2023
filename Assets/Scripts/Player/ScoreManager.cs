@@ -108,6 +108,7 @@ public class ScoreManager : MonoBehaviour
         while (timeRemaining > 0f)
         {
             int seconds = Mathf.FloorToInt(timeRemaining);
+            countdownText.GetComponent<Animator>().SetTrigger("PlayAnim");
             countdownText.GetComponent<TextMeshProUGUI>().text = seconds.ToString();
 
             GetComponent<AudioSource>().PlayOneShot(countdownTickClip);
@@ -118,6 +119,7 @@ public class ScoreManager : MonoBehaviour
 
         // Timer has reached 0
         countdownText.GetComponent<TextMeshProUGUI>().text = "0";
+        countdownText.GetComponent<Animator>().SetTrigger("PlayAnim");
         GetComponent<AudioSource>().PlayOneShot(countdownTickClip);
         yield return new WaitForSeconds(1f);
         countdownText.SetActive(false);
