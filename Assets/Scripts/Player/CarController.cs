@@ -30,43 +30,48 @@ public class CarController : MonoBehaviour
 
     private void Update()
     {
-        float moveAxis = Input.GetAxis("Vertical");
-        float rotationAxis = Input.GetAxis("Horizontal");
+        exhaust.SetActive(scoreManager.gameStart);
 
-        //modify particle system based on speed
-        ParticleSystem particles = exhaust.GetComponent<ParticleSystem>();
-        var psEmission = particles.emission;
-        psEmission.rateOverTime = currentSpeed * 2.5f;
-
-        //adjust the current speed based on acceleration and friction
-        if (moveAxis != 0f)
+        if (scoreManager.gameStart)
         {
-            if (!scoreManager.gameEnd) currentSpeed += moveAxis * acceleration * Time.deltaTime;
-        }
-        else
-        {
-            float deceleration = friction * Mathf.Sign(currentSpeed);
-            currentSpeed -= deceleration * Time.deltaTime;
+            float moveAxis = Input.GetAxis("Vertical");
+            float rotationAxis = Input.GetAxis("Horizontal");
 
-            if (Mathf.Sign(currentSpeed) != Mathf.Sign(deceleration))
+            //modify particle system based on speed
+            ParticleSystem particles = exhaust.GetComponent<ParticleSystem>();
+            var psEmission = particles.emission;
+            psEmission.rateOverTime = currentSpeed * 2.5f;
+
+            //adjust the current speed based on acceleration and friction
+            if (moveAxis != 0f)
             {
-                currentSpeed = 0f;
+                if (!scoreManager.gameEnd) currentSpeed += moveAxis * acceleration * Time.deltaTime;
             }
+            else
+            {
+                float deceleration = friction * Mathf.Sign(currentSpeed);
+                currentSpeed -= deceleration * Time.deltaTime;
+
+                if (Mathf.Sign(currentSpeed) != Mathf.Sign(deceleration))
+                {
+                    currentSpeed = 0f;
+                }
+            }
+
+            currentSpeed = Mathf.Clamp(currentSpeed, -maxSpeed, maxSpeed);
+
+            //move the car
+            // transform.Translate(Vector2.up * currentSpeed * Time.deltaTime);
+            Vector2 movement = transform.up * currentSpeed;
+            rb.velocity = movement;
+
+            //wrap the car horizontally
+            WrapHorizontal();
+
+            //rotate the car
+            if (!scoreManager.gameEnd) transform.Rotate(Vector3.forward * -rotationSpeed * rotationAxis * Time.deltaTime);
+            // rb.angularVelocity = -rotationSpeed * rotationAxis;
         }
-
-        currentSpeed = Mathf.Clamp(currentSpeed, -maxSpeed, maxSpeed);
-
-        //move the car
-        // transform.Translate(Vector2.up * currentSpeed * Time.deltaTime);
-        Vector2 movement = transform.up * currentSpeed;
-        rb.velocity = movement;
-
-        //wrap the car horizontally
-        WrapHorizontal();
-
-        //rotate the car
-        if (!scoreManager.gameEnd) transform.Rotate(Vector3.forward * -rotationSpeed * rotationAxis * Time.deltaTime);
-        // rb.angularVelocity = -rotationSpeed * rotationAxis;
     }
 
     private void WrapHorizontal()

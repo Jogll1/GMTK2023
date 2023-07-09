@@ -47,6 +47,9 @@ public class SmartFrog : MonoBehaviour
     public AudioClip jumpClip;
     public bool playedSound;
 
+    public GameObject loseLife;
+    public bool hasGotToEnd;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -58,6 +61,7 @@ public class SmartFrog : MonoBehaviour
         moveTarget.parent = null;
 
         died = false;
+        hasGotToEnd = false;
 
         //set canMove
         canMove = true;
@@ -76,70 +80,73 @@ public class SmartFrog : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //change timer
-        currentMoveTimer -= Time.deltaTime;
-
-        //change timer and moveSpeed based on frog deaths
-        newMoveTimer = moveTimer - spawnManager.frogDeaths * 0.01f;
-        newMoveTimer = Mathf.Clamp(newMoveTimer, 0, moveTimer);
-        // newMoveSpeed = moveSpeed + spawnManager.frogDeaths * 0.01f;
-        // newMoveSpeed = Mathf.Clamp(newMoveSpeed, moveSpeed, 10);
-
-        if (currentMoveTimer <= 0 && canMove)
+        if (scoreManager.gameStart)
         {
-            if (!playedSound && GetComponent<AudioSource>().enabled)
-            {
-                GetComponent<AudioSource>().PlayOneShot(jumpClip);
-                playedSound = true;
-            }
-            transform.position = Vector3.MoveTowards(transform.position, moveTarget.position, newMoveSpeed * Time.deltaTime);
-        }
+            //change timer
+            currentMoveTimer -= Time.deltaTime;
 
-        //if at target
-        if (Vector3.Distance(transform.position, moveTarget.position) <= .05f)
-        {
-            playedSound = false;
-            //reset timer once at target
-            currentMoveTimer = Random.Range(newMoveTimer - 0.1f, newMoveTimer + 0.15f);
+            //change timer and moveSpeed based on frog deaths
+            newMoveTimer = moveTimer - spawnManager.frogDeaths * 0.01f;
+            newMoveTimer = Mathf.Clamp(newMoveTimer, 0, moveTimer);
+            // newMoveSpeed = moveSpeed + spawnManager.frogDeaths * 0.01f;
+            // newMoveSpeed = Mathf.Clamp(newMoveSpeed, moveSpeed, 10);
 
-            //get next move from path list  
-            //convert pos to nodes
-            //set path
-            path = pathfinding.FindPath(transform.position, goal.position);
-            //get own node pos
-            Node myNode = pathfinding.grid.NodeFromWorldPos(transform.position);
-            if (path.Count > 0) //when frog has nowhere to go path is null
+            if (currentMoveTimer <= 0 && canMove)
             {
-                int h = path[0].gridX - myNode.gridX;
-                int v = path[0].gridY - myNode.gridY;
-
-                moveTarget.position = UpdateTargetPos(moveTarget.position, h, v);
-            }
-            else
-            {
-                //move towards goal
-                int h = 0;
-                int v = 0;
-                int ran = Random.Range(0, 2); //bit of random
-                float distX = goal.transform.position.x - transform.position.x;
-                float distY = goal.transform.position.y - transform.position.y;
-                if (ran == 0)
+                if (!playedSound && GetComponent<AudioSource>().enabled)
                 {
-                    if (Mathf.Abs(distX) > 0.05f)
-                    {
-                        h = (int)Mathf.Sign(distX);
-                    }
+                    GetComponent<AudioSource>().PlayOneShot(jumpClip);
+                    playedSound = true;
+                }
+                transform.position = Vector3.MoveTowards(transform.position, moveTarget.position, newMoveSpeed * Time.deltaTime);
+            }
+
+            //if at target
+            if (Vector3.Distance(transform.position, moveTarget.position) <= .05f)
+            {
+                playedSound = false;
+                //reset timer once at target
+                currentMoveTimer = Random.Range(newMoveTimer - 0.1f, newMoveTimer + 0.15f);
+
+                //get next move from path list  
+                //convert pos to nodes
+                //set path
+                path = pathfinding.FindPath(transform.position, goal.position);
+                //get own node pos
+                Node myNode = pathfinding.grid.NodeFromWorldPos(transform.position);
+                if (path.Count > 0) //when frog has nowhere to go path is null
+                {
+                    int h = path[0].gridX - myNode.gridX;
+                    int v = path[0].gridY - myNode.gridY;
+
+                    moveTarget.position = UpdateTargetPos(moveTarget.position, h, v);
                 }
                 else
                 {
-                    if (Mathf.Abs(distY) > 0.05f)
+                    //move towards goal
+                    int h = 0;
+                    int v = 0;
+                    int ran = Random.Range(0, 2); //bit of random
+                    float distX = goal.transform.position.x - transform.position.x;
+                    float distY = goal.transform.position.y - transform.position.y;
+                    if (ran == 0)
                     {
-                        v = (int)Mathf.Sign(distY);
+                        if (Mathf.Abs(distX) > 0.05f)
+                        {
+                            h = (int)Mathf.Sign(distX);
+                        }
                     }
-                }
+                    else
+                    {
+                        if (Mathf.Abs(distY) > 0.05f)
+                        {
+                            v = (int)Mathf.Sign(distY);
+                        }
+                    }
 
-                //move target
-                moveTarget.position = UpdateTargetPos(moveTarget.position, h, v);
+                    //move target
+                    moveTarget.position = UpdateTargetPos(moveTarget.position, h, v);
+                }
             }
         }
     }
@@ -229,8 +236,11 @@ public class SmartFrog : MonoBehaviour
             Destroy(moveTarget.gameObject);
             Destroy(gameObject);
         }
-        else if (other.tag == "Goal")
+        else if (other.tag == "Goal" && !hasGotToEnd)
         {
+            //spawn sound effect
+            if (!scoreManager.gameEnd) Instantiate(loseLife, transform.position, Quaternion.identity);
+
             //remove this from list
             spawnManager.frogs.Remove(gameObject);
 
@@ -239,6 +249,8 @@ public class SmartFrog : MonoBehaviour
 
             //turn off sound
             GetComponent<AudioSource>().enabled = false;
+
+            hasGotToEnd = true;
         }
     }
 }
